@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "ShadowField",
+    "slug": "shadowfield",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "shadowfield",
+    "splash": {
+      "backgroundColor": "#1e40af"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1e40af"
+      },
+      "package": "com.shadowfield.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "YOUR_MAPBOX_DOWNLOAD_TOKEN"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ShadowField needs your location to share it with your security team and alert you when you enter or leave zones.",
+          "locationWhenInUsePermission": "ShadowField needs your location to share it with your security team.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#DC2626",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shadowfield.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ShadowField needs your location to share it with your security team.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ShadowField tracks your location in the background to alert your team if you enter or leave zones, even when the app is closed.",
+        "UIBackgroundModes": ["location", "fetch", "remote-notification"]
+      }
+    }
+  }
+}

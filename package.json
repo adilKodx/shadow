@@ -1,0 +1,43 @@
+{
+  "name": "shadowfield",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:web": "vite",
+    "dev:mobile": "EXPO_NO_METRO_WORKSPACE_ROOT=1 npm run start --workspace=@shadowfield/mobile",
+    "build": "vite build",
+    "build:check": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "ios": "npm run ios --workspace=@shadowfield/mobile",
+    "android": "npm run android --workspace=@shadowfield/mobile"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "@types/leaflet": "^1.9.21",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "date-fns": "^3.6.0",
+    "framer-motion": "^12.12.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.462.0",
+    "postcss": "^8.4.38",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.23.0",
+    "react-toastify": "^11.0.5",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "~5.5.3"
+  }
+}

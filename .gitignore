@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output (DO NOT COMMIT — leaks compiled secrets)
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Firebase / Google service credentials
+**/firebasesdk.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Apple push key
+**/AuthKey_*.p8
+
+# Android keystores
+**/*.keystore
+**/*.jks
+
+# Expo cache
+**/.expo/
+
+# iOS / Android native build artifacts
+ios/Pods/
+ios/build/
+**/Pods/
+**/DerivedData/
+android/.gradle/
+android/build/
+android/app/build/
+
+# Logs
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
