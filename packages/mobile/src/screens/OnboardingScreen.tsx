@@ -9,9 +9,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Svg, {
@@ -331,116 +331,174 @@ function StepPerimeter({ colors }: { colors: ThemeColors }) {
   );
 }
 
-// ─── Step 3: Permissions ───
-function StepPermissions({ colors }: { colors: ThemeColors }) {
+// ─── Step 3: Instant alerts — fanned notification card stack ───
+function StepAlerts({ colors }: { colors: ThemeColors }) {
   const styles = makeStyles(colors);
-  const [perms, setPerms] = useState([
-    { name: 'Location', desc: 'Live patrol tracking & geofence alerts', color: colors.accent, on: true },
-    { name: 'Notifications', desc: 'Critical alerts, even on silent', color: colors.primary, on: true },
-    { name: 'Camera', desc: 'Attach photo evidence to incidents', color: colors.high, on: false },
-    { name: 'Background', desc: 'Stay online during patrol', color: colors.warning, on: true },
-  ]);
-  const toggle = (i: number) =>
-    setPerms(p => p.map((x, idx) => (idx === i ? { ...x, on: !x.on } : x)));
+  const cards: {
+    sev: string;
+    sevLabel: string;
+    title: string;
+    sub: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    color: string;
+  }[] = [
+    { sev: 'critical', sevLabel: 'CRITICAL', title: 'Breach detected', sub: 'Perimeter · Zone C · now', icon: 'warning', color: colors.critical },
+    { sev: 'high', sevLabel: 'HIGH', title: 'Suspicious activity', sub: 'Unidentified · Zone A · 0:42 ago', icon: 'alert-circle', color: colors.high },
+    { sev: 'medium', sevLabel: 'MEDIUM', title: 'Guard check-in late', sub: 'J. Patel · Zone D · 2m ago', icon: 'time', color: colors.warning },
+  ];
 
   return (
     <View style={{ flex: 1, paddingHorizontal: spacing.xl }}>
-      <Text style={styles.title2}>Grant access</Text>
-      <Text style={styles.title2}>to your field kit.</Text>
-      <Text style={[styles.body, { textAlign: 'left', marginTop: spacing.sm, marginBottom: spacing.xl }]}>
-        We only use what you allow. You can change these later in Settings.
-      </Text>
-      <View style={{ gap: 10 }}>
-        {perms.map((p, i) => (
-          <Animated.View
-            key={p.name}
-            entering={FadeIn.delay(i * 80)}
-            style={[
-              styles.permCard,
-              { borderColor: p.on ? p.color + '55' : colors.border },
-            ]}
-          >
-            <View
+      <View style={styles.alertStack}>
+        {cards.map((c, i) => {
+          const isTop = i === 0;
+          const rot = (i - 1) * 3; // -3, 0, 3 degrees
+          return (
+            <Animated.View
+              key={i}
+              entering={FadeIn.delay(i * 120)}
               style={[
-                styles.permIcon,
+                styles.alertCard,
                 {
-                  backgroundColor: p.color + '22',
-                  borderColor: p.color + '55',
-                  shadowColor: p.color,
-                  shadowOpacity: p.on ? 0.4 : 0,
-                  shadowRadius: 12,
+                  top: 10 + i * 28,
+                  transform: [{ rotate: `${rot}deg` }],
+                  zIndex: cards.length - i,
+                  borderColor: isTop ? c.color + '55' : colors.border,
+                  shadowColor: isTop ? c.color : '#000',
+                  shadowOpacity: isTop ? 0.35 : 0.25,
                 },
               ]}
             >
-              <View style={[styles.permGlyph, { backgroundColor: p.color }]} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ ...typography.label, color: colors.text }}>{p.name}</Text>
-              <Text style={{ ...typography.bodySmall, color: colors.textSecondary, marginTop: 1 }}>{p.desc}</Text>
-            </View>
-            <Switch
-              value={p.on}
-              onValueChange={() => toggle(i)}
-              trackColor={{ true: p.color, false: colors.surfaceMute }}
-              thumbColor="#fff"
-            />
-          </Animated.View>
-        ))}
+              <View style={styles.alertIconWrap}>
+                {isTop && <PulseRing size={54} color={c.color} delay={0} />}
+                {isTop && <PulseRing size={54} color={c.color} delay={1100} />}
+                <View
+                  style={[
+                    styles.alertIcon,
+                    {
+                      backgroundColor: c.color + '22',
+                      borderColor: c.color + '66',
+                    },
+                  ]}
+                >
+                  <Ionicons name={c.icon} size={18} color={c.color} />
+                </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ ...typography.label, color: colors.text }} numberOfLines={1}>{c.title}</Text>
+                <Text style={{ ...typography.bodySmall, color: colors.textSecondary, marginTop: 2 }} numberOfLines={1}>{c.sub}</Text>
+              </View>
+              <View style={[styles.alertSevPill, { backgroundColor: c.color + '22', borderColor: c.color + '66' }]}>
+                <Text style={{ fontSize: 9, fontWeight: '800', color: c.color, letterSpacing: 1 }}>{c.sevLabel}</Text>
+              </View>
+            </Animated.View>
+          );
+        })}
+      </View>
+
+      <View style={{ marginTop: spacing.lg }}>
+        <Text style={styles.title2}>Know before</Text>
+        <Text style={[styles.title2, { color: colors.primary }]}>it escalates.</Text>
+        <Text style={[styles.body, { textAlign: 'left', marginTop: spacing.sm }]}>
+          Critical, high, medium — severity-scored alerts with pulse indicators. Acknowledge with one tap.
+        </Text>
       </View>
     </View>
   );
 }
 
-// ─── Step 4: Role select ───
-function StepRole({
-  colors,
-  role,
-  setRole,
-}: { colors: ThemeColors; role: 'operator' | 'manager'; setRole: (r: 'operator' | 'manager') => void }) {
+// ─── Typing dot for chat step ───
+function TypingDot({ color, delay }: { color: string; delay: number }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withDelay(
+      delay,
+      withRepeat(withTiming(1, { duration: 700, easing: Easing.inOut(Easing.ease) }), -1, true),
+    );
+  }, [delay]);
+  const style = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0, 1], [0.3, 1]),
+    transform: [{ scale: interpolate(t.value, [0, 1], [0.8, 1.2]) }],
+  }));
+  return <Animated.View style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }, style]} />;
+}
+
+// ─── Step 4: Team dispatch — chat bubbles + avatars + typing indicator ───
+function StepChat({ colors }: { colors: ThemeColors }) {
   const styles = makeStyles(colors);
-  const cards: { id: 'operator' | 'manager'; title: string; desc: string }[] = [
-    { id: 'operator', title: 'Operator', desc: 'Field guard. See alerts, your patrol, your zone.' },
-    { id: 'manager', title: 'Manager', desc: 'Run the room. All zones, all teams, all data.' },
-  ];
+  const avatarColors = [colors.primary, colors.accent, colors.high, colors.warning];
+
   return (
     <View style={{ flex: 1, paddingHorizontal: spacing.xl }}>
-      <Text style={styles.title2}>Choose your role.</Text>
-      <Text style={[styles.body, { textAlign: 'left', marginTop: spacing.sm, marginBottom: spacing.xl }]}>
-        We'll customize the dashboard for how you work.
-      </Text>
-      <View style={{ gap: 12 }}>
-        {cards.map(c => {
-          const selected = role === c.id;
-          return (
-            <TouchableOpacity
-              key={c.id}
-              onPress={() => setRole(c.id)}
-              activeOpacity={0.85}
-              style={[
-                styles.roleCard,
-                {
-                  borderColor: selected ? colors.primary : colors.border,
-                  shadowColor: colors.primary,
-                  shadowOpacity: selected ? 0.3 : 0,
-                  shadowRadius: 18,
-                },
-              ]}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...typography.h2, color: colors.text }}>{c.title}</Text>
-                <Text style={{ ...typography.body, color: colors.textSecondary, marginTop: 4 }}>{c.desc}</Text>
-              </View>
-              <View
-                style={[
-                  styles.radio,
-                  { borderColor: selected ? colors.primary : colors.border },
-                ]}
-              >
-                {selected && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+      <View style={styles.chatPanel}>
+        {/* Team avatars row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+          {avatarColors.map((c, i) => (
+            <View
+              key={i}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: c,
+                marginLeft: i === 0 ? 0 : -8,
+                borderWidth: 2,
+                borderColor: colors.surface,
+              }}
+            />
+          ))}
+          <View style={{ marginLeft: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <GlowDot color={colors.success} size={5} />
+            <Text style={{ fontSize: 10, fontWeight: '700', color: colors.textSecondary, letterSpacing: 1.5 }}>
+              OPS · 4 ONLINE
+            </Text>
+          </View>
+        </View>
+
+        {/* Incoming bubble */}
+        <Animated.View
+          entering={FadeIn.delay(120)}
+          style={[styles.bubbleIn, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+        >
+          <Text style={{ ...typography.bodySmall, color: colors.text, lineHeight: 18 }}>
+            Roger, on my way to Zone A.
+          </Text>
+          <Text style={{ fontSize: 9, color: colors.textMute, marginTop: 4, letterSpacing: 1 }}>
+            ALEX · 09:41
+          </Text>
+        </Animated.View>
+
+        {/* Outgoing gradient bubble */}
+        <Animated.View entering={FadeIn.delay(300)} style={styles.bubbleOutWrap}>
+          <LinearGradient
+            colors={[colors.primary, colors.accent] as any}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.bubbleOut}
+          >
+            <Text style={{ ...typography.bodySmall, color: '#fff', lineHeight: 18 }}>
+              Suspicious individual near Gate 3. Need backup.
+            </Text>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Typing indicator */}
+        <Animated.View
+          entering={FadeIn.delay(500)}
+          style={[styles.typingBubble, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+        >
+          <TypingDot color={colors.textSecondary} delay={0} />
+          <TypingDot color={colors.textSecondary} delay={180} />
+          <TypingDot color={colors.textSecondary} delay={360} />
+        </Animated.View>
+      </View>
+
+      <View style={{ marginTop: spacing.lg }}>
+        <Text style={styles.title2}>Stay in sync</Text>
+        <Text style={[styles.title2, { color: colors.primary }]}>under pressure.</Text>
+        <Text style={[styles.body, { textAlign: 'left', marginTop: spacing.sm }]}>
+          Coordinate with dispatchers and field teams in real time. Voice notes, pinned locations, broadcasts.
+        </Text>
       </View>
     </View>
   );
@@ -451,7 +509,6 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const colors = useThemeColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [step, setStep] = useState(0);
-  const [role, setRole] = useState<'operator' | 'manager'>('operator');
   const isLast = step === 3;
 
   return (
@@ -483,8 +540,8 @@ export default function OnboardingScreen({ onDone }: { onDone: () => void }) {
       <View style={{ flex: 1 }}>
         {step === 0 && <StepWelcome colors={colors} />}
         {step === 1 && <StepPerimeter colors={colors} />}
-        {step === 2 && <StepPermissions colors={colors} />}
-        {step === 3 && <StepRole colors={colors} role={role} setRole={setRole} />}
+        {step === 2 && <StepAlerts colors={colors} />}
+        {step === 3 && <StepChat colors={colors} />}
       </View>
 
       {/* CTA row */}
@@ -637,51 +694,82 @@ const makeStyles = (colors: ThemeColors) =>
       borderWidth: 1,
     },
     sevDot: { width: 5, height: 5, borderRadius: 2.5 },
-    permCard: {
+    // Step 3 — alert stack
+    alertStack: {
+      height: 220,
+      position: 'relative',
+      marginTop: spacing.md,
+    },
+    alertCard: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.md,
+      gap: 12,
       padding: 14,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
       borderWidth: 1,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
     },
-    permIcon: {
+    alertIconWrap: {
       width: 40,
       height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    alertIcon: {
+      width: 38,
+      height: 38,
       borderRadius: 10,
       borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowOffset: { width: 0, height: 0 },
-      elevation: 4,
     },
-    permGlyph: {
-      width: 14,
-      height: 14,
-      borderRadius: 4,
-      opacity: 0.9,
-    },
-    roleCard: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: spacing.lg,
-      borderRadius: radius.lg,
-      backgroundColor: colors.surface,
+    alertSevPill: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 6,
       borderWidth: 1,
-      shadowOffset: { width: 0, height: 8 },
-      elevation: 4,
     },
-    radio: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      borderWidth: 2,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginLeft: spacing.md,
+    // Step 4 — chat
+    chatPanel: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: spacing.lg,
+      marginTop: spacing.sm,
     },
-    radioInner: { width: 12, height: 12, borderRadius: 6 },
+    bubbleIn: {
+      alignSelf: 'flex-start',
+      maxWidth: '80%',
+      padding: 11,
+      borderRadius: 14,
+      borderWidth: 1,
+      marginBottom: spacing.sm,
+    },
+    bubbleOutWrap: {
+      alignSelf: 'flex-end',
+      maxWidth: '85%',
+      marginBottom: spacing.sm,
+    },
+    bubbleOut: {
+      padding: 12,
+      borderRadius: 14,
+    },
+    typingBubble: {
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      gap: 4,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 14,
+      borderWidth: 1,
+    },
     cta: {
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.md,
