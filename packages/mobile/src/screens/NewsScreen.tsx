@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -30,6 +30,50 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   general: { bg: '#f1f5f9', text: '#475569' },
 };
 
+type PostCardProps = { post: NewsPost; onPress: (post: NewsPost) => void };
+
+const PostCard = memo(function PostCard({ post, onPress }: PostCardProps) {
+  const cat = CATEGORY_COLORS[post.category] || CATEGORY_COLORS.general;
+  return (
+    <TouchableOpacity
+      style={[styles.postCard, shadow.sm, post.is_pinned && styles.postPinned]}
+      activeOpacity={0.7}
+      onPress={() => onPress(post)}
+    >
+      {post.is_pinned && (
+        <View style={styles.pinBadge}>
+          <Ionicons name="pin" size={10} color="#f59e0b" />
+          <Text style={styles.pinText}>Pinned</Text>
+        </View>
+      )}
+      <View style={styles.postHeader}>
+        <View style={[styles.categoryBadge, { backgroundColor: cat.bg }]}>
+          <Text style={[styles.categoryText, { color: cat.text }]}>
+            {NEWS_CATEGORIES.find(c => c.value === post.category)?.label || post.category}
+          </Text>
+        </View>
+        {post.priority === 'urgent' && (
+          <View style={styles.urgentBadge}>
+            <Text style={styles.urgentText}>Urgent</Text>
+          </View>
+        )}
+      </View>
+      <Text style={styles.postTitle} numberOfLines={2}>{post.title}</Text>
+      <Text style={styles.postContent} numberOfLines={2}>{post.content}</Text>
+      <View style={styles.postFooter}>
+        <Text style={styles.postAuthor}>{post.author_name}</Text>
+        <View style={styles.postMeta}>
+          <Ionicons name="eye-outline" size={12} color={colors.textTertiary} />
+          <Text style={styles.postMetaText}>{post.view_count}</Text>
+          <Text style={styles.postDate}>
+            {format(new Date(post.publish_at), 'MMM d')}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+});
+
 export default function NewsScreen() {
   const { member } = useAuth();
   const { posts, loading, fetchPosts, createPost, deletePost, incrementViewCount } = useNews();
@@ -53,52 +97,22 @@ export default function NewsScreen() {
     setRefreshing(false);
   }, [fetchPosts]);
 
-  const openPost = (post: NewsPost) => {
-    setSelectedPost(post);
-    incrementViewCount(post.id);
-  };
+  const openPost = useCallback(
+    (post: NewsPost) => {
+      setSelectedPost(post);
+      incrementViewCount(post.id);
+    },
+    [incrementViewCount],
+  );
 
-  const renderPost = ({ item: post }: { item: NewsPost }) => {
-    const cat = CATEGORY_COLORS[post.category] || CATEGORY_COLORS.general;
-    return (
-      <TouchableOpacity
-        style={[styles.postCard, shadow.sm, post.is_pinned && styles.postPinned]}
-        activeOpacity={0.7}
-        onPress={() => openPost(post)}
-      >
-        {post.is_pinned && (
-          <View style={styles.pinBadge}>
-            <Ionicons name="pin" size={10} color="#f59e0b" />
-            <Text style={styles.pinText}>Pinned</Text>
-          </View>
-        )}
-        <View style={styles.postHeader}>
-          <View style={[styles.categoryBadge, { backgroundColor: cat.bg }]}>
-            <Text style={[styles.categoryText, { color: cat.text }]}>
-              {NEWS_CATEGORIES.find(c => c.value === post.category)?.label || post.category}
-            </Text>
-          </View>
-          {post.priority === 'urgent' && (
-            <View style={styles.urgentBadge}>
-              <Text style={styles.urgentText}>Urgent</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.postTitle} numberOfLines={2}>{post.title}</Text>
-        <Text style={styles.postContent} numberOfLines={2}>{post.content}</Text>
-        <View style={styles.postFooter}>
-          <Text style={styles.postAuthor}>{post.author_name}</Text>
-          <View style={styles.postMeta}>
-            <Ionicons name="eye-outline" size={12} color={colors.textTertiary} />
-            <Text style={styles.postMetaText}>{post.view_count}</Text>
-            <Text style={styles.postDate}>
-              {format(new Date(post.publish_at), 'MMM d')}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderPost = useCallback(
+    ({ item: post }: { item: NewsPost }) => (
+      <PostCard post={post} onPress={openPost} />
+    ),
+    [openPost],
+  );
+
+  const keyExtractor = useCallback((item: NewsPost) => item.id, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -166,9 +180,14 @@ export default function NewsScreen() {
         <FlatList
           data={filtered}
           renderItem={renderPost}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={9}
+          updateCellsBatchingPeriod={50}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

@@ -4,6 +4,13 @@ import 'react-native-url-polyfill/auto';
 // at module load so it can be triggered even when the app cold-starts.
 import './src/services/backgroundLocation';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+// Enable native screen primitives. We deliberately do NOT call
+// `enableFreeze(true)` because freezing/unfreezing screens conflicts with
+// reanimated v3 worklets under Bridgeless / Fabric mode — refocused screens
+// can render empty (opacity stuck at 0). Window-only FlatList rendering and
+// React.memo on row components handle the perf wins instead.
+enableScreens(true);
 import React, { useCallback, useEffect, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, ScrollView } from 'react-native';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
@@ -16,6 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initSupabase } from '@shadowfield/shared/src/lib/supabase';
 import { AuthProvider, useAuth } from '@shadowfield/shared/src/context/AuthContext';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './src/config';
+import { BRAND } from './src/brand';
 
 import LoginScreen from './src/screens/LoginScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -56,8 +64,8 @@ function LoadingScreen() {
       <View style={styles.loadingLogo}>
         <Text style={styles.loadingIcon}>🛡️</Text>
       </View>
-      <Text style={styles.loadingTitle}>ShadowField</Text>
-      <Text style={styles.loadingSubtitle}>Security & Communication Platform</Text>
+      <Text style={styles.loadingTitle}>{BRAND.appName}</Text>
+      <Text style={styles.loadingSubtitle}>{BRAND.loadingTagline}</Text>
       <ActivityIndicator size="large" color="#60a5fa" style={{ marginTop: 32 }} />
     </View>
   );

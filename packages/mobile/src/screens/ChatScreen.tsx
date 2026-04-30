@@ -2,7 +2,7 @@
 // Two views in one file: thread list (default) + thread detail (when one is selected).
 // Mock data for now — wire to your messaging backend later.
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback, memo } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput,
   KeyboardAvoidingView, Platform,
@@ -57,10 +57,22 @@ export default function ChatScreen({ navigation }: any) {
   const colors = useThemeColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [activeThread, setActiveThread] = useState<Thread | null>(null);
-  const threads = MOCK_THREADS(colors);
+  const threads = useMemo(() => MOCK_THREADS(colors), [colors]);
+
+  const closeThread = useCallback(() => setActiveThread(null), []);
+  const openThread = useCallback((t: Thread) => setActiveThread(t), []);
+
+  const renderThread = useCallback(
+    ({ item, index }: { item: Thread; index: number }) => (
+      <ThreadRow thread={item} index={index} onPress={openThread} colors={colors} styles={styles} />
+    ),
+    [openThread, colors, styles],
+  );
+
+  const threadKey = useCallback((t: Thread) => t.id, []);
 
   if (activeThread) {
-    return <ThreadDetail thread={activeThread} onBack={() => setActiveThread(null)} colors={colors} styles={styles} />;
+    return <ThreadDetail thread={activeThread} onBack={closeThread} colors={colors} styles={styles} />;
   }
 
   return (
@@ -85,21 +97,32 @@ export default function ChatScreen({ navigation }: any) {
       {/* Thread list */}
       <FlatList
         data={threads}
-        keyExtractor={(t) => t.id}
+        keyExtractor={threadKey}
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}
-        renderItem={({ item, index }) => (
-          <ThreadRow thread={item} index={index} onPress={() => setActiveThread(item)} colors={colors} styles={styles} />
-        )}
+        renderItem={renderThread}
+        removeClippedSubviews
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={9}
+        updateCellsBatchingPeriod={50}
       />
     </SafeAreaView>
   );
 }
 
-function ThreadRow({ thread, index, onPress, colors, styles }: any) {
+type ThreadRowProps = {
+  thread: Thread;
+  index: number;
+  onPress: (thread: Thread) => void;
+  colors: ThemeColors;
+  styles: any;
+};
+
+const ThreadRow = memo(function ThreadRow({ thread, index, onPress, colors, styles }: ThreadRowProps) {
   const fade = useFadeUp(index, 60);
   return (
     <Animated.View style={fade}>
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.threadRow}>
+      <TouchableOpacity onPress={() => onPress(thread)} activeOpacity={0.7} style={styles.threadRow}>
         <View style={styles.avatarWrap}>
           <LinearGradient colors={[thread.accent + 'AA', thread.accent + '44']} style={styles.avatar}>
             <Text style={styles.avatarText}>{thread.initial}</Text>
@@ -126,17 +149,26 @@ function ThreadRow({ thread, index, onPress, colors, styles }: any) {
       </TouchableOpacity>
     </Animated.View>
   );
-}
+});
 
 function ThreadDetail({ thread, onBack, colors, styles }: any) {
   const [msg, setMsg] = useState('');
   const [messages, setMessages] = useState<Msg[]>(MOCK_MESSAGES);
   const dots = useTypingDots();
-  const send = () => {
+  const send = useCallback(() => {
     if (!msg.trim()) return;
-    setMessages([...messages, { id: String(Date.now()), text: msg, time: 'now', fromMe: true, status: 'sent' }]);
+    setMessages((prev) => [...prev, { id: String(Date.now()), text: msg, time: 'now', fromMe: true, status: 'sent' }]);
     setMsg('');
-  };
+  }, [msg]);
+
+  const renderBubble = useCallback(
+    ({ item }: { item: Msg }) => (
+      <Bubble msg={item} accent={thread.accent} colors={colors} styles={styles} />
+    ),
+    [thread.accent, colors, styles],
+  );
+
+  const bubbleKey = useCallback((m: Msg) => m.id, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -164,9 +196,14 @@ function ThreadDetail({ thread, onBack, colors, styles }: any) {
         {/* Messages */}
         <FlatList
           data={messages}
-          keyExtractor={(m) => m.id}
+          keyExtractor={bubbleKey}
           contentContainerStyle={{ padding: spacing.lg, gap: spacing.sm }}
-          renderItem={({ item }) => <Bubble msg={item} accent={thread.accent} colors={colors} styles={styles} />}
+          renderItem={renderBubble}
+          removeClippedSubviews
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          windowSize={10}
+          updateCellsBatchingPeriod={50}
         />
 
         {/* Typing indicator */}
@@ -206,7 +243,7 @@ function ThreadDetail({ thread, onBack, colors, styles }: any) {
   );
 }
 
-function Bubble({ msg, accent, colors, styles }: any) {
+const Bubble = memo(function Bubble({ msg, accent, colors, styles }: any) {
   if (msg.fromMe) {
     return (
       <View style={{ alignItems: 'flex-end' }}>
@@ -230,7 +267,7 @@ function Bubble({ msg, accent, colors, styles }: any) {
       <MonoLabel style={{ marginTop: 4 }}>{msg.time}</MonoLabel>
     </View>
   );
-}
+});
 
 const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },

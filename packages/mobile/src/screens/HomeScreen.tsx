@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '@shadowfield/shared/src/context/AuthContext';
+import { BRAND } from '../brand';
 
 export default function HomeScreen() {
   const { user, tenant, member, signOut } = useAuth();
@@ -22,7 +23,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{tenant?.app_name || 'ShadowField'}</Text>
+        <Text style={styles.headerTitle}>{tenant?.app_name || BRAND.appName}</Text>
         <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>

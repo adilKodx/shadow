@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAlerts } from '@shadowfield/shared/src/hooks/useAlerts';
+import { useAlerts, type Alert } from '@shadowfield/shared/src/hooks/useAlerts';
 import { useAuth } from '@shadowfield/shared/src/context/AuthContext';
 import { colors, spacing, radius, typography, shadow } from '../theme';
 
@@ -20,6 +20,54 @@ const SEVERITY_STYLES: Record<string, { icon: string; color: string; bg: string 
   medium: { icon: 'information-circle', color: '#d97706', bg: '#fef3c7' },
   low: { icon: 'chevron-down-circle', color: '#2563eb', bg: '#dbeafe' },
 };
+
+// Runtime DB rows include `severity` and `status` fields that the shared
+// `Alert` interface does not yet declare. Extend locally to keep type-safety
+// without touching the shared package.
+type AlertRow = Alert & {
+  severity: 'critical' | 'high' | 'medium' | 'low' | string;
+  status: 'active' | 'acknowledged' | string;
+};
+
+type AlertCardProps = {
+  alert: AlertRow;
+  onAcknowledge: (id: string) => void;
+};
+
+const AlertCard = memo(function AlertCard({ alert, onAcknowledge }: AlertCardProps) {
+  const sev = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
+  return (
+    <View style={[styles.alertCard, shadow.sm]}>
+      <View style={[styles.severityIcon, { backgroundColor: sev.bg }]}>
+        <Ionicons name={sev.icon as any} size={20} color={sev.color} />
+      </View>
+      <View style={styles.alertBody}>
+        <View style={styles.alertTop}>
+          <Text style={styles.alertTitle} numberOfLines={1}>{alert.title}</Text>
+          <Text style={styles.alertTime}>
+            {new Date(alert.created_at).toLocaleDateString()}
+          </Text>
+        </View>
+        <Text style={styles.alertMessage} numberOfLines={2}>{alert.message}</Text>
+        <View style={styles.alertFooter}>
+          <View style={[styles.statusPill, alert.status === 'active' ? styles.statusActive : styles.statusAck]}>
+            <Text style={[styles.statusText, alert.status === 'active' ? styles.statusTextActive : styles.statusTextAck]}>
+              {alert.status}
+            </Text>
+          </View>
+          {alert.status === 'active' && (
+            <TouchableOpacity
+              style={styles.ackButton}
+              onPress={() => onAcknowledge(alert.id)}
+            >
+              <Text style={styles.ackButtonText}>Acknowledge</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+});
 
 export default function AlertsScreen() {
   const { alerts, loading, fetchAlerts, acknowledgeAlert } = useAlerts();
@@ -38,6 +86,22 @@ export default function AlertsScreen() {
     if (filter === 'acknowledged') return a.status === 'acknowledged';
     return true;
   });
+
+  const handleAcknowledge = useCallback(
+    (id: string) => {
+      acknowledgeAlert(id);
+    },
+    [acknowledgeAlert],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Alert }) => (
+      <AlertCard alert={item as AlertRow} onAcknowledge={handleAcknowledge} />
+    ),
+    [handleAcknowledge],
+  );
+
+  const keyExtractor = useCallback((item: Alert) => item.id, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -70,46 +134,18 @@ export default function AlertsScreen() {
       ) : (
         <FlatList
           data={filtered}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={9}
+          updateCellsBatchingPeriod={50}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />
           }
-          renderItem={({ item: alert }) => {
-            const sev = SEVERITY_STYLES[alert.severity] || SEVERITY_STYLES.medium;
-            return (
-              <View style={[styles.alertCard, shadow.sm]}>
-                <View style={[styles.severityIcon, { backgroundColor: sev.bg }]}>
-                  <Ionicons name={sev.icon as any} size={20} color={sev.color} />
-                </View>
-                <View style={styles.alertBody}>
-                  <View style={styles.alertTop}>
-                    <Text style={styles.alertTitle} numberOfLines={1}>{alert.title}</Text>
-                    <Text style={styles.alertTime}>
-                      {new Date(alert.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Text style={styles.alertMessage} numberOfLines={2}>{alert.message}</Text>
-                  <View style={styles.alertFooter}>
-                    <View style={[styles.statusPill, alert.status === 'active' ? styles.statusActive : styles.statusAck]}>
-                      <Text style={[styles.statusText, alert.status === 'active' ? styles.statusTextActive : styles.statusTextAck]}>
-                        {alert.status}
-                      </Text>
-                    </View>
-                    {alert.status === 'active' && (
-                      <TouchableOpacity
-                        style={styles.ackButton}
-                        onPress={() => acknowledgeAlert(alert.id)}
-                      >
-                        <Text style={styles.ackButtonText}>Acknowledge</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              </View>
-            );
-          }}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="checkmark-circle-outline" size={48} color={colors.textTertiary} />

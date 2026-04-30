@@ -23,6 +23,7 @@ import { spacing, radius, typography, gradients, type ThemeColors } from '../the
 import { useThemeColors, useIsDark } from '../context/ThemeContext';
 import { useFadeUp, useFloat } from '../animations';
 import { GlassCard, GradientButton, MonoLabel } from '../components/ui';
+import { BRAND } from '../brand';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -73,8 +74,8 @@ export default function LoginScreen() {
               <Ionicons name="shield-checkmark" size={32} color="#0A0A14" />
             </LinearGradient>
           </Animated.View>
-          <Text style={styles.title}>SHADOWFIELD</Text>
-          <MonoLabel style={{ marginTop: 4 }}>TACTICAL OPERATIONS PLATFORM</MonoLabel>
+          <Text style={styles.title}>{BRAND.appNameUpper}</Text>
+          <MonoLabel style={{ marginTop: 4 }}>{BRAND.loginTagline}</MonoLabel>
         </Animated.View>
 
         {/* Form card */}
@@ -89,7 +90,7 @@ export default function LoginScreen() {
                 style={styles.input}
                 value={email}
                 onChangeText={setEmail}
-                placeholder="you@shadowfield.io"
+                placeholder={BRAND.loginEmailPlaceholder}
                 placeholderTextColor={colors.textMute}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -126,7 +127,7 @@ export default function LoginScreen() {
                 <ActivityIndicator color={colors.primary} />
               </View>
             ) : (
-              <GradientButton title="ENTER SHADOWFIELD →" onPress={handleLogin} />
+              <GradientButton title={BRAND.loginButtonLabel} onPress={handleLogin} />
             )}
           </GlassCard>
 

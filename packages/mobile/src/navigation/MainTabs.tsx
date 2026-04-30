@@ -52,6 +52,7 @@ export default function MainTabs() {
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
+        lazy: true,
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
