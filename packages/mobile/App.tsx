@@ -18,8 +18,10 @@ import { AuthProvider, useAuth } from '@shadowfield/shared/src/context/AuthConte
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './src/config';
 
 import LoginScreen from './src/screens/LoginScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import DrawerNav from './src/navigation/DrawerNav';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
+import { ThemeProvider } from './src/context/ThemeContext';
 
 // Initialize Supabase with React Native-specific options
 try {
@@ -37,6 +39,7 @@ try {
 }
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Login: undefined;
   Main: undefined;
 };
@@ -97,6 +100,13 @@ class ErrorBoundary extends React.Component<
 
 function RootNavigator() {
   const { user, tenant, loading } = useAuth();
+  const [seenOnboarding, setSeenOnboarding] = React.useState<boolean | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem('shadowfield.onboarding.done').then(v =>
+      setSeenOnboarding(v === '1'),
+    );
+  }, []);
 
   // Deep-link handler — when a push notification is tapped that contains
   // an `incident_id`, jump to LiveMap focused on it.
@@ -167,13 +177,25 @@ function RootNavigator() {
   // Register device token + listen for notification taps once authenticated
   usePushNotifications(handlePushTap);
 
-  if (loading) {
+  if (loading || seenOnboarding === null) {
     return <LoadingScreen />;
   }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-      {user && tenant ? (
+      {!seenOnboarding ? (
+        <Stack.Screen name="Onboarding">
+          {(props) => (
+            <OnboardingScreen
+              {...props}
+              onDone={() => {
+                AsyncStorage.setItem('shadowfield.onboarding.done', '1');
+                setSeenOnboarding(true);
+              }}
+            />
+          )}
+        </Stack.Screen>
+      ) : user && tenant ? (
         <Stack.Screen name="Main" component={DrawerNav} />
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
@@ -188,18 +210,20 @@ export default function App() {
       <ErrorBoundary>
         <SafeAreaProvider>
           <AuthProvider>
-            <NavigationContainer
-              ref={navigationRef}
-              onStateChange={(state) => {
-                if (__DEV__ && state) {
-                  const route = state.routes[state.index ?? 0];
-                  console.log(`🧭 [NAV] ${route?.name}${route?.state ? ' → ' + route.state.routes[route.state.index ?? 0]?.name : ''}`);
-                }
-              }}
-            >
-              <RootNavigator />
-              <StatusBar style="light" />
-            </NavigationContainer>
+            <ThemeProvider defaultMode="dark">
+              <NavigationContainer
+                ref={navigationRef}
+                onStateChange={(state) => {
+                  if (__DEV__ && state) {
+                    const route = state.routes[state.index ?? 0];
+                    console.log(`🧭 [NAV] ${route?.name}${route?.state ? ' → ' + route.state.routes[route.state.index ?? 0]?.name : ''}`);
+                  }
+                }}
+              >
+                <RootNavigator />
+                <StatusBar style="light" />
+              </NavigationContainer>
+            </ThemeProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </ErrorBoundary>

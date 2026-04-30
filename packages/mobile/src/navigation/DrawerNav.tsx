@@ -12,6 +12,8 @@ import MainTabs from './MainTabs';
 import MapScreen from '../screens/MapScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import SetupGuideScreen from '../screens/SetupGuideScreen';
+import ChatScreen from '../screens/ChatScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -20,7 +22,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
   const menuItems = [
     { icon: 'grid-outline', label: 'Dashboard', screen: 'MainTabs' },
-    { icon: 'chatbubbles-outline', label: 'Chat', screen: null },
+    { icon: 'chatbubbles-outline', label: 'Chat', screen: 'Chat' },
+    { icon: 'notifications-outline', label: 'Notifications', screen: 'Notifications' },
     { icon: 'newspaper-outline', label: 'News', screen: null },
     { icon: 'warning-outline', label: 'Alerts', screen: null },
     { icon: 'document-text-outline', label: 'Incidents', screen: null },
@@ -30,7 +33,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
     { icon: 'people-outline', label: 'Team', screen: null },
     { icon: 'calendar-outline', label: 'Attendance', screen: null },
     { icon: 'videocam-outline', label: 'Video Feeds', screen: null },
-    { icon: 'notifications-outline', label: 'Notifications', screen: 'NotificationSettings' },
+    { icon: 'settings-outline', label: 'Notification Settings', screen: 'NotificationSettings' },
     { icon: 'help-buoy-outline', label: 'Setup Guide', screen: 'SetupGuide' },
   ];
 
@@ -106,6 +109,8 @@ export default function DrawerNav() {
     >
       <Drawer.Screen name="MainTabs" component={MainTabs} />
       <Drawer.Screen name="LiveMap" component={MapScreen} />
+      <Drawer.Screen name="Chat" component={ChatScreen} />
+      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
       <Drawer.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
       <Drawer.Screen name="SetupGuide" component={SetupGuideScreen} />
     </Drawer.Navigator>
