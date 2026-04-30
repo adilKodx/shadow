@@ -26,6 +26,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import DeviceCompatGuide from '../components/DeviceCompatGuide';
 import { colors, spacing, radius, typography, shadow } from '../theme';
+import { BRAND } from '../brand';
 
 export default function SetupGuideScreen({ navigation }: any) {
   const [permission, setPermission] = React.useState<string>('…');
@@ -68,7 +69,7 @@ export default function SetupGuideScreen({ navigation }: any) {
           <View style={styles.heroIcon}>
             <Ionicons name="rocket" size={28} color={colors.primary} />
           </View>
-          <Text style={styles.heroTitle}>Get the most out of ShadowField</Text>
+          <Text style={styles.heroTitle}>Get the most out of {BRAND.appName}</Text>
           <Text style={styles.heroSub}>
             Some Android phones need extra permissions for incident pushes and zone alerts to
             arrive reliably. This page tells you exactly what to enable on your device.
@@ -134,7 +135,7 @@ export default function SetupGuideScreen({ navigation }: any) {
           <FaqRow
             icon="notifications"
             title="Push notifications"
-            body="Lets ShadowField wake your phone when an incident is reported. Without this, you only see alerts when the app is open."
+            body={`Lets ${BRAND.appName} wake your phone when an incident is reported. Without this, you only see alerts when the app is open.`}
           />
           <FaqRow
             icon="navigate"
@@ -144,12 +145,12 @@ export default function SetupGuideScreen({ navigation }: any) {
           <FaqRow
             icon="rocket"
             title="Autostart / background activity"
-            body="Some Android skins (MIUI, EMUI, ColorOS, FunTouch) kill background apps to save battery. You must whitelist ShadowField or pushes won't arrive."
+            body={`Some Android skins (MIUI, EMUI, ColorOS, FunTouch) kill background apps to save battery. You must whitelist ${BRAND.appName} or pushes won't arrive.`}
           />
           <FaqRow
             icon="battery-charging"
             title="Disable battery optimization"
-            body="Tells Android not to throttle ShadowField's network connection. Without this, the FCM socket disconnects after ~10 minutes of inactivity."
+            body={`Tells Android not to throttle ${BRAND.appName}'s network connection. Without this, the FCM socket disconnects after ~10 minutes of inactivity.`}
           />
           <FaqRow
             icon="lock-closed"
@@ -175,7 +176,7 @@ export default function SetupGuideScreen({ navigation }: any) {
           <FaqRow
             icon="time"
             title="Pushes arrive late or only when I open the app"
-            body="Your phone is in aggressive battery-save mode. Disable battery optimization and ensure background activity is allowed for ShadowField."
+            body={`Your phone is in aggressive battery-save mode. Disable battery optimization and ensure background activity is allowed for ${BRAND.appName}.`}
           />
           <FaqRow
             icon="walk"

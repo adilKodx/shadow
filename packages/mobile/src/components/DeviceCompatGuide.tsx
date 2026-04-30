@@ -25,6 +25,7 @@ import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius, typography, shadow } from '../theme';
+import { BRAND } from '../brand';
 
 const STORAGE_KEY = '@sf_setup_acknowledged_v1';
 
@@ -55,28 +56,28 @@ const VENDORS: Record<string, Vendor> = {
         icon: 'rocket',
         title: 'Enable Autostart',
         description:
-          'Settings → Apps → Permissions → Autostart → enable ShadowField. Without this, push notifications cannot arrive when the app is closed.',
+          `Settings → Apps → Permissions → Autostart → enable ${BRAND.appName}. Without this, push notifications cannot arrive when the app is closed.`,
         critical: true,
       },
       {
         icon: 'battery-charging',
         title: 'Battery saver: No restrictions',
         description:
-          'Settings → Apps → Manage apps → ShadowField → Battery saver → set to "No restrictions".',
+          `Settings → Apps → Manage apps → ${BRAND.appName} → Battery saver → set to "No restrictions".`,
         critical: true,
       },
       {
         icon: 'eye',
         title: 'Allow background activity',
         description:
-          'In ShadowField app info → Other permissions → enable "Display pop-up windows while running in the background", "Start in background", and "Show on lock screen".',
+          `In ${BRAND.appName} app info → Other permissions → enable "Display pop-up windows while running in the background", "Start in background", and "Show on lock screen".`,
         critical: true,
       },
       {
         icon: 'lock-closed',
         title: 'Lock app in recent tasks',
         description:
-          'Open Recent Apps → drag ShadowField down → tap the padlock icon. Prevents MIUI from auto-killing it.',
+          `Open Recent Apps → drag ${BRAND.appName} down → tap the padlock icon. Prevents MIUI from auto-killing it.`,
       },
     ],
   },
@@ -89,14 +90,14 @@ const VENDORS: Record<string, Vendor> = {
         icon: 'rocket',
         title: 'Mark as Protected app',
         description:
-          'Settings → Battery → App launch → ShadowField → toggle OFF "Manage automatically", then enable Auto-launch, Secondary launch, and Run in background.',
+          `Settings → Battery → App launch → ${BRAND.appName} → toggle OFF "Manage automatically", then enable Auto-launch, Secondary launch, and Run in background.`,
         critical: true,
       },
       {
         icon: 'battery-charging',
         title: 'Disable power-intensive prompt',
         description:
-          'Settings → Battery → More battery settings → Close apps after screen lock → exclude ShadowField.',
+          `Settings → Battery → More battery settings → Close apps after screen lock → exclude ${BRAND.appName}.`,
         critical: true,
       },
     ],
@@ -110,21 +111,21 @@ const VENDORS: Record<string, Vendor> = {
         icon: 'rocket',
         title: 'Allow auto-startup',
         description:
-          'Settings → App Management → Auto-startup → enable ShadowField.',
+          `Settings → App Management → Auto-startup → enable ${BRAND.appName}.`,
         critical: true,
       },
       {
         icon: 'battery-charging',
         title: 'Power saving: Allow background',
         description:
-          'Settings → Battery → App battery management → ShadowField → enable "Allow background activity" and "Allow auto-launch".',
+          `Settings → Battery → App battery management → ${BRAND.appName} → enable "Allow background activity" and "Allow auto-launch".`,
         critical: true,
       },
       {
         icon: 'notifications',
         title: 'Lock-screen notifications',
         description:
-          'Settings → Notification & status bar → ShadowField → enable "Lock screen notifications".',
+          `Settings → Notification & status bar → ${BRAND.appName} → enable "Lock screen notifications".`,
       },
     ],
   },
@@ -137,14 +138,14 @@ const VENDORS: Record<string, Vendor> = {
         icon: 'rocket',
         title: 'Enable Auto-start',
         description:
-          'Settings → Battery → High background power consumption → enable ShadowField. Also: Settings → More settings → Permission management → Autostart → enable ShadowField.',
+          `Settings → Battery → High background power consumption → enable ${BRAND.appName}. Also: Settings → More settings → Permission management → Autostart → enable ${BRAND.appName}.`,
         critical: true,
       },
       {
         icon: 'battery-charging',
         title: 'Background power consumption',
         description:
-          'Settings → Battery → Background power consumption management → ShadowField → "Allow background high power consumption".',
+          `Settings → Battery → Background power consumption management → ${BRAND.appName} → "Allow background high power consumption".`,
         critical: true,
       },
     ],
@@ -152,40 +153,40 @@ const VENDORS: Record<string, Vendor> = {
   oneplus: {
     label: 'OnePlus (OxygenOS)',
     reason:
-      'OxygenOS battery optimizer can throttle FCM. Disabling for ShadowField improves reliability.',
+      `OxygenOS battery optimizer can throttle FCM. Disabling for ${BRAND.appName} improves reliability.`,
     steps: [
       {
         icon: 'battery-charging',
         title: 'Battery: Don\'t optimize',
         description:
-          'Settings → Battery → Battery optimization → ShadowField → "Don\'t optimize".',
+          `Settings → Battery → Battery optimization → ${BRAND.appName} → "Don't optimize".`,
         critical: true,
       },
       {
         icon: 'rocket',
         title: 'Allow background activity',
         description:
-          'Settings → Apps → ShadowField → Battery → enable "Allow background activity".',
+          `Settings → Apps → ${BRAND.appName} → Battery → enable "Allow background activity".`,
       },
     ],
   },
   samsung: {
     label: 'Samsung (One UI)',
     reason:
-      'Samsung\'s "Sleeping apps" feature suspends background apps. Add ShadowField to "Apps that won\'t be put to sleep".',
+      `Samsung's "Sleeping apps" feature suspends background apps. Add ${BRAND.appName} to "Apps that won't be put to sleep".`,
     steps: [
       {
         icon: 'battery-charging',
         title: 'Never put to sleep',
         description:
-          'Settings → Battery and device care → Battery → Background usage limits → "Never sleeping apps" → add ShadowField.',
+          `Settings → Battery and device care → Battery → Background usage limits → "Never sleeping apps" → add ${BRAND.appName}.`,
         critical: true,
       },
       {
         icon: 'rocket',
         title: 'Unrestricted battery',
         description:
-          'Settings → Apps → ShadowField → Battery → "Unrestricted".',
+          `Settings → Apps → ${BRAND.appName} → Battery → "Unrestricted".`,
       },
     ],
   },
@@ -197,7 +198,7 @@ const VENDORS: Record<string, Vendor> = {
         icon: 'battery-charging',
         title: 'Unrestricted battery usage',
         description:
-          'Settings → Apps → ShadowField → App battery usage → Unrestricted.',
+          `Settings → Apps → ${BRAND.appName} → App battery usage → Unrestricted.`,
       },
     ],
   },
@@ -233,20 +234,20 @@ const IOS_GUIDE: Vendor = {
       icon: 'notifications',
       title: 'Enable notifications',
       description:
-        'Settings → Notifications → ShadowField → Allow Notifications, Sounds, Badges, Lock Screen, Banners.',
+        `Settings → Notifications → ${BRAND.appName} → Allow Notifications, Sounds, Badges, Lock Screen, Banners.`,
       critical: true,
     },
     {
       icon: 'navigate',
       title: 'Location: Always allow',
       description:
-        'Settings → Privacy → Location Services → ShadowField → "Always" — required for background tracking and zone alerts.',
+        `Settings → Privacy → Location Services → ${BRAND.appName} → "Always" — required for background tracking and zone alerts.`,
     },
     {
       icon: 'refresh',
       title: 'Background App Refresh ON',
       description:
-        'Settings → General → Background App Refresh → ShadowField → enabled. Without this, geofence detection stops when the app is backgrounded.',
+        `Settings → General → Background App Refresh → ${BRAND.appName} → enabled. Without this, geofence detection stops when the app is backgrounded.`,
     },
   ],
 };
@@ -278,13 +279,13 @@ export default function DeviceCompatGuide({ forceOpen = false }: Props) {
       {
         icon: 'battery-charging',
         title: 'Disable battery optimization',
-        description: 'Settings → Apps → ShadowField → Battery → Unrestricted.',
+        description: `Settings → Apps → ${BRAND.appName} → Battery → Unrestricted.`,
       },
       {
         icon: 'notifications',
         title: 'Allow notifications',
         description:
-          'Settings → Apps → ShadowField → Notifications → enable all categories.',
+          `Settings → Apps → ${BRAND.appName} → Notifications → enable all categories.`,
       },
     ],
   };

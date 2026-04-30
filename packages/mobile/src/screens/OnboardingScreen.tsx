@@ -39,6 +39,7 @@ import Animated, {
 import { spacing, radius, typography, type ThemeColors } from '../theme';
 import { useThemeColors } from '../context/ThemeContext';
 import { GradientButton, MonoLabel, GlowDot } from '../components/ui';
+import { BRAND } from '../brand';
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -175,7 +176,7 @@ function StepWelcome({ colors }: { colors: ThemeColors }) {
         {/* Brand */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <StackedLogo size={22} color={colors.primary} />
-          <Text style={styles.wordmark}>SHADOWFIELD</Text>
+          <Text style={styles.wordmark}>{BRAND.appNameUpper}</Text>
         </View>
 
         {/* Radar */}

@@ -16,6 +16,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@shadowfield/shared/src/lib/supabase';
+import { BRAND } from '../brand';
 
 const BG_LOCATION_TASK = 'shadowfield-background-location';
 const STORAGE_USER_KEY = '@sf:bg_user_id';
@@ -113,8 +114,8 @@ export async function startBackgroundTracking(
     deferredUpdatesDistance: 50,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: 'ShadowField is tracking your location',
-      notificationBody: 'Sharing your position with the security team.',
+      notificationTitle: BRAND.bgLocationNotificationTitle,
+      notificationBody: BRAND.bgLocationNotificationBody,
       notificationColor: '#1d4ed8',
     },
     pausesUpdatesAutomatically: false,
